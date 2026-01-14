@@ -3,6 +3,7 @@
 #include "peripherals/gpio/gpio.h"
 #include "peripherals/uart/uart.h"
 #include "peripherals/uart/uart_rx_buf.h"
+#include "peripherals/uart/uart_tx_buf.h"
 
 int main(void) {
     event_t evt;
@@ -10,6 +11,7 @@ int main(void) {
     timer_init();
     gpio_init();
     uart_rx_buffer_init();
+    uart_tx_buffer_init();
     uart_init();
 
     while (1) {
@@ -22,8 +24,7 @@ int main(void) {
                     case EVENT_UART_RX: {
                         uint8_t byte;
                         while (uart_rx_buffer_get(&byte)) {
-                            /* breakpoint here */
-                            volatile uint8_t c = byte;
+                            uart_send_byte(byte); // echo
                         }
                         break;
                     }

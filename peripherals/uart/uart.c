@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "uart_rx_buf.h"
+#include "uart_tx_buf.h"
 #include "../../event.h"
 
 #define UART0_BASE 0x4000C000
@@ -41,15 +42,50 @@ void uart_init(void) {
     // Enable IRQ in NVIC
     NVIC_EN0 |= (1 << UART0_IRQ);
 }
+static volatile int uart_tx_active = 0;
 
 void UART0_Handler(void) {
+    /* RX handling */
+    int rx_count = 0;
     while (!(UART_FR & (1 << 4))) {
         uint8_t byte = UART_DR & 0xFF;
         uart_rx_buffer_put(byte);
+        rx_count++;
+    }
+    
+    /* Post event if bytes were received */
+    if (rx_count > 0) {
+        event_post_from_isr(EVENT_UART_RX, 0);
     }
 
-    /* Signal main ONCE per interrupt */
-    event_post_from_isr(EVENT_UART_RX, 0);
+    /* TX handling */
+    if (!(UART_FR & (1 << 5))) { // TX FIFO not full
+        uint8_t byte;
+        if (uart_tx_buffer_get(&byte)) {
+            UART_DR = byte;
+        } else {
+            UART_IM &= ~(1 << 5); // disable TX interrupt
+            uart_tx_active = 0;   // TX idle again
+        }
+    }
 
-    UART_ICR |= (1 << 4);
+    UART_ICR = (1 << 4) | (1 << 5); // clear all UART interrupts
+}
+
+
+void uart_send_byte(uint8_t byte) {
+    if (!uart_tx_buffer_put(byte)) {
+        return; // buffer full, drop or handle later
+    }
+
+    /* If TX is idle, kick it */
+    if (!uart_tx_active) {
+        uart_tx_active = 1;
+
+        uint8_t first;
+        if (uart_tx_buffer_get(&first)) {
+            UART_DR = first;          // PRIME THE FIFO
+            UART_IM |= (1 << 5);      // enable TX interrupt
+        }
+    }
 }

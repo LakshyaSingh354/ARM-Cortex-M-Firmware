@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "uart_rx_buf.h"
 #include "../../event.h"
 
 #define UART0_BASE 0x4000C000
@@ -42,12 +43,13 @@ void uart_init(void) {
 }
 
 void UART0_Handler(void) {
-    // While RX FIFO not empty
     while (!(UART_FR & (1 << 4))) {
         uint8_t byte = UART_DR & 0xFF;
-        event_post_from_isr(EVENT_UART_RX, byte);
+        uart_rx_buffer_put(byte);
     }
 
-    // Clear RX interrupt
+    /* Signal main ONCE per interrupt */
+    event_post_from_isr(EVENT_UART_RX, 0);
+
     UART_ICR |= (1 << 4);
 }

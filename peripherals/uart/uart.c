@@ -34,7 +34,7 @@ void uart_init(void) {
     UART_LCRH = (0x3 << 5) | (1 << 4);
 
     // Enable RX interrupt
-    UART_IM |= (1 << 4); // RXIM
+    UART_IM |= (1 << 4);
 
     // Enable UART, RX, TX
     UART_CTL = (1 << 0) | (1 << 8) | (1 << 9);
@@ -45,7 +45,7 @@ void uart_init(void) {
 static volatile int uart_tx_active = 0;
 
 void UART0_Handler(void) {
-    /* RX handling */
+    // RX handling
     int rx_count = 0;
     while (!(UART_FR & (1 << 4))) {
         uint8_t byte = UART_DR & 0xFF;
@@ -53,12 +53,12 @@ void UART0_Handler(void) {
         rx_count++;
     }
     
-    /* Post event if bytes were received */
+    // Post event if bytes were received
     if (rx_count > 0) {
         event_post_from_isr(EVENT_UART_RX, 0);
     }
 
-    /* TX handling */
+    // TX handling
     if (!(UART_FR & (1 << 5))) { // TX FIFO not full
         uint8_t byte;
         if (uart_tx_buffer_get(&byte)) {
@@ -78,7 +78,7 @@ void uart_send_byte(uint8_t byte) {
         return; // buffer full, drop or handle later
     }
 
-    /* If TX is idle, kick it */
+    // If TX is idle, kick it
     if (!uart_tx_active) {
         uart_tx_active = 1;
 

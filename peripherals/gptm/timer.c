@@ -9,7 +9,6 @@
 #define GPTM_IMR        (*(volatile uint32_t *)(TIMER0_BASE + 0x018))
 #define GPTM_ICR        (*(volatile uint32_t *)(TIMER0_BASE + 0x024))
 #define GPTM_TAILR      (*(volatile uint32_t *)(TIMER0_BASE + 0x028))
-#define GPTM_TAPR       (*(volatile uint32_t *)(TIMER0_BASE + 0x038))
 
 #define SYSCTL_RCGCTIMER (*(volatile uint32_t *)0x400FE104) // bit 16 for Timer 0
 
@@ -29,8 +28,6 @@ void timer_init(void) {
 
     // Periodic mode, count-down
     GPTM_TAMR = 0x2;
-
-    GPTM_TAPR = 0;
 
     // Load value 
     GPTM_TAILR = 16000000;

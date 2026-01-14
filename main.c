@@ -7,7 +7,9 @@
 
 int main(void) {
     event_t evt;
+    uint32_t tick_count = 0;
 
+    // driver initialization
     timer_init();
     gpio_init();
     uart_rx_buffer_init();
@@ -19,6 +21,10 @@ int main(void) {
             switch (evt.type) {
                 case EVENT_TICK:
                     // heartbeat logic
+                    tick_count++;
+                    if (tick_count % 5 == 0){
+                        gpio_toggle_led(); // gpio demonstration
+                    }
                     break;
 
                     case EVENT_UART_RX: {

@@ -26,9 +26,7 @@ typedef struct {
     event_t buffer[EVENT_QUEUE_SIZE];
 } event_queue_t;
 
-// Queue instance is defined in event.c
 extern event_queue_t event_queue;
 
-// Function declarations
 void event_post_from_isr(event_type_t type, uint32_t data);
 int event_get(event_t *evt);

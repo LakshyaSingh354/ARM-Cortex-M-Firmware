@@ -15,8 +15,8 @@ typedef struct {
 
 void uart_rx_buffer_init(void);
 
-/* ISR-side */
+// ISR-side
 void uart_rx_buffer_put(uint8_t byte);
 
-/* main-side */
+// main-side
 int uart_rx_buffer_get(uint8_t *byte);

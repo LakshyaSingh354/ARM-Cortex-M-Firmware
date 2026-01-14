@@ -31,7 +31,13 @@
 .word Default_Handler       /* 14 PendSV */
 .word Default_Handler       /* 15 SysTick */
 
-.rept 19                    /* IRQ0–IRQ18 */
+.rept 5                     /* IRQ0–IRQ4 */
+.word Default_Handler
+.endr
+
+.word UART0_Handler         /* IROQ5 */
+
+.rept 13
 .word Default_Handler
 .endr
 
